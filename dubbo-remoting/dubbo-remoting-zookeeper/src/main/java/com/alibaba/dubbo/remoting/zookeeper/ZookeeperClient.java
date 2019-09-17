@@ -20,14 +20,17 @@ import com.alibaba.dubbo.common.URL;
 
 import java.util.List;
 
+//Zookeeper客户端抽象接口
 public interface ZookeeperClient {
 
-    void create(String path, boolean ephemeral);
+    //节点相关
+    void create(String path, /*是否是临时节点*/boolean ephemeral);
 
     void delete(String path);
 
     List<String> getChildren(String path);
 
+    //监听器相关
     List<String> addChildListener(String path, ChildListener listener);
 
     void removeChildListener(String path, ChildListener listener);
@@ -36,6 +39,7 @@ public interface ZookeeperClient {
 
     void removeStateListener(StateListener listener);
 
+    //连接状态相关
     boolean isConnected();
 
     void close();

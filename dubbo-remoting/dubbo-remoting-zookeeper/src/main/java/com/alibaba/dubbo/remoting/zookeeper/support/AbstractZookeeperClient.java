@@ -52,11 +52,13 @@ public abstract class AbstractZookeeperClient<TargetChildListener> implements Zo
 
     @Override
     public void create(String path, boolean ephemeral) {
+        //如果持久节点已创建则直接返回
         if (!ephemeral) {
             if (checkExists(path)) {
                 return;
             }
         }
+        //循环创建父节点
         int i = path.lastIndexOf('/');
         if (i > 0) {
             create(path.substring(0, i), false);
@@ -109,6 +111,7 @@ public abstract class AbstractZookeeperClient<TargetChildListener> implements Zo
     }
 
     protected void stateChanged(int state) {
+        //通知监听者
         for (StateListener sessionListener : getSessionListeners()) {
             sessionListener.stateChanged(state);
         }

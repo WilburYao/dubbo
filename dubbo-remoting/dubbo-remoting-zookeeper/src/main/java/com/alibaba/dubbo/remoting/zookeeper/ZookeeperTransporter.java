@@ -22,6 +22,7 @@ import com.alibaba.dubbo.common.extension.Adaptive;
 import com.alibaba.dubbo.common.extension.SPI;
 
 @SPI("curator")
+//ZookeeperClient的工厂方法
 public interface ZookeeperTransporter {
 
     @Adaptive({Constants.CLIENT_KEY, Constants.TRANSPORTER_KEY})
