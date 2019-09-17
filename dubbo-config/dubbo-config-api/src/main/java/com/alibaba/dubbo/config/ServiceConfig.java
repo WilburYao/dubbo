@@ -229,7 +229,9 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         if (interfaceName == null || interfaceName.length() == 0) {
             throw new IllegalStateException("<dubbo:service interface=\"\" /> interface not allow null!");
         }
+        //属性优先级：自身设置（显式/默认）->外部引用(-Dxxx->外部引用自身设置->配置文件)
         checkDefault();
+        //当自身属性不存在时利用外部引用来填充自身熟悉值
         if (provider != null) {
             if (application == null) {
                 application = provider.getApplication();
@@ -264,22 +266,26 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             }
         }
         if (ref instanceof GenericService) {
+            //泛化接口
             interfaceClass = GenericService.class;
             if (StringUtils.isEmpty(generic)) {
                 generic = Boolean.TRUE.toString();
             }
         } else {
+            //普通接口
             try {
                 interfaceClass = Class.forName(interfaceName, true, Thread.currentThread()
                         .getContextClassLoader());
             } catch (ClassNotFoundException e) {
                 throw new IllegalStateException(e.getMessage(), e);
             }
+            //检查接口/方法与ref
             checkInterfaceAndMethods(interfaceClass, methods);
             checkRef();
             generic = Boolean.FALSE.toString();
         }
         if (local != null) {
+            //已弃用
             if ("true".equals(local)) {
                 local = interfaceName + "Local";
             }
@@ -307,6 +313,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                 throw new IllegalStateException("The stub implementation class " + stubClass.getName() + " not implement interface " + interfaceName);
             }
         }
+        //检查填充引用属性
         checkApplication();
         checkRegistry();
         checkProtocol();
@@ -315,6 +322,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         if (path == null || path.length() == 0) {
             path = interfaceName;
         }
+        //多协议多注册中心服务暴露
         doExportUrls();
         ProviderModel providerModel = new ProviderModel(getUniqueServiceName(), this, ref);
         ApplicationModel.initProviderModel(getUniqueServiceName(), providerModel);
