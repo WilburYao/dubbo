@@ -90,9 +90,11 @@ public abstract class AbstractConfig implements Serializable {
     }
 
     protected static void appendProperties(AbstractConfig config) {
+        //属性覆盖
         if (config == null) {
             return;
         }
+        //获取当前Config的属性前置：Provider->dubbo.provider
         String prefix = "dubbo." + getTagName(config.getClass()) + ".";
         Method[] methods = config.getClass().getMethods();
         for (Method method : methods) {
@@ -100,9 +102,12 @@ public abstract class AbstractConfig implements Serializable {
                 String name = method.getName();
                 if (name.length() > 3 && name.startsWith("set") && Modifier.isPublic(method.getModifiers())
                         && method.getParameterTypes().length == 1 && isPrimitive(method.getParameterTypes()[0])) {
+                    //驼峰属性名转点分隔属性名：abcDeFgh->abc.de.fgh
                     String property = StringUtils.camelToSplitName(name.substring(3, 4).toLowerCase() + name.substring(4), ".");
 
                     String value = null;
+                    //解析JVM系统参数:如-Ddubbo.provider.[ConfigId].property
+                    //先检查特定Config级别(带ConfigId)， 然后检查通用Config
                     if (config.getId() != null && config.getId().length() > 0) {
                         String pn = prefix + config.getId() + "." + property;
                         value = System.getProperty(pn);
@@ -129,14 +134,18 @@ public abstract class AbstractConfig implements Serializable {
                             }
                         }
                         if (getter != null) {
+                            //利用get方法来检查Xml&注解级别，如果没有才检查配置文件级别。
                             if (getter.invoke(config) == null) {
                                 if (config.getId() != null && config.getId().length() > 0) {
+                                    //带configId配置属性
                                     value = ConfigUtils.getProperty(prefix + config.getId() + "." + property);
                                 }
                                 if (value == null || value.length() == 0) {
+                                    //通用配置属性
                                     value = ConfigUtils.getProperty(prefix + property);
                                 }
                                 if (value == null || value.length() == 0) {
+                                    //历史属性兼容
                                     String legacyKey = legacyProperties.get(prefix + property);
                                     if (legacyKey != null && legacyKey.length() > 0) {
                                         value = convertLegacyValue(legacyKey, ConfigUtils.getProperty(legacyKey));

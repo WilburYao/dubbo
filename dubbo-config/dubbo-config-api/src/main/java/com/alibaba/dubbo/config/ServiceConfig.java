@@ -193,6 +193,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     }
 
     public synchronized void export() {
+        //根据配置决定是否暴露和是否延迟暴露
         if (provider != null) {
             if (export == null) {
                 export = provider.getExport();
