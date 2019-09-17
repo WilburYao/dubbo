@@ -362,8 +362,10 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     private void doExportUrls() {
+        //获取所有注册中心信息URL
         List<URL> registryURLs = loadRegistries(true);
         for (ProtocolConfig protocolConfig : protocols) {
+            //每个协议对所有注册中心进行服务暴露
             doExportUrlsFor1Protocol(protocolConfig, registryURLs);
         }
     }
