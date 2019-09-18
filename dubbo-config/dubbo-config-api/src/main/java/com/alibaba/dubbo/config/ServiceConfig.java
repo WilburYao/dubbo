@@ -396,8 +396,10 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         appendParameters(map, provider, Constants.DEFAULT_KEY);
         appendParameters(map, protocolConfig);
         appendParameters(map, this);
+        //解析Methods以及Arguments，填充map
         if (methods != null && !methods.isEmpty()) {
             for (MethodConfig method : methods) {
+                //填充methodConfig
                 appendParameters(map, method, method.getName());
                 String retryKey = method.getName() + ".retry";
                 if (map.containsKey(retryKey)) {
@@ -408,6 +410,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                 }
                 List<ArgumentConfig> arguments = method.getArguments();
                 if (arguments != null && !arguments.isEmpty()) {
+                    //解析与methodConfig相关连的Argumet
                     for (ArgumentConfig argument : arguments) {
                         // convert argument type
                         if (argument.getType() != null && argument.getType().length() > 0) {
