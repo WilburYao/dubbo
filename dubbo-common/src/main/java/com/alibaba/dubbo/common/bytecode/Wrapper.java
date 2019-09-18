@@ -102,11 +102,14 @@ public abstract class Wrapper {
         if (c == Object.class)
             return OBJECT_WRAPPER;
 
+        //访问缓存
         Wrapper ret = WRAPPER_MAP.get(c);
         if (ret == null) {
+            //未命中创建并写入缓存
             ret = makeWrapper(c);
             WRAPPER_MAP.put(c, ret);
         }
+        //返回
         return ret;
     }
 
@@ -117,6 +120,7 @@ public abstract class Wrapper {
         String name = c.getName();
         ClassLoader cl = ClassHelper.getClassLoader(c);
 
+        //proxy对象三个方法
         StringBuilder c1 = new StringBuilder("public void setPropertyValue(Object o, String n, Object v){ ");
         StringBuilder c2 = new StringBuilder("public Object getPropertyValue(Object o, String n){ ");
         StringBuilder c3 = new StringBuilder("public Object invokeMethod(Object o, String n, Class[] p, Object[] v) throws " + InvocationTargetException.class.getName() + "{ ");
