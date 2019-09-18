@@ -159,10 +159,12 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     protected List<URL> loadRegistries(boolean provider) {
+        //检查registry配置， 不存在则报错
         checkRegistry();
         List<URL> registryList = new ArrayList<URL>();
         if (registries != null && !registries.isEmpty()) {
             for (RegistryConfig config : registries) {
+                //获取每个注册配置的address属性
                 String address = config.getAddress();
                 if (address == null || address.length() == 0) {
                     address = Constants.ANYHOST_VALUE;
@@ -172,6 +174,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                     address = sysaddress;
                 }
                 if (address.length() > 0 && !RegistryConfig.NO_AVAILABLE.equalsIgnoreCase(address)) {
+                    //属性填充
                     Map<String, String> map = new HashMap<String, String>();
                     appendParameters(map, application);
                     appendParameters(map, config);
@@ -188,8 +191,10 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                             map.put("protocol", "dubbo");
                         }
                     }
+                    //因为address可能包含多个url， 所以解析成URL列表
                     List<URL> urls = UrlUtils.parseURLs(address, map);
                     for (URL url : urls) {
+                        //将协议类型调整到registry键处， 并将原来协议改为registry
                         url = url.addParameter(Constants.REGISTRY_KEY, url.getProtocol());
                         url = url.setProtocol(Constants.REGISTRY_PROTOCOL);
                         if ((provider && url.getParameter(Constants.REGISTER_KEY, true))

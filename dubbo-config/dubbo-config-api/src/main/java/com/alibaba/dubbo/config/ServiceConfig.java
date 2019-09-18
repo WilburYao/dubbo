@@ -219,6 +219,12 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     }
 
     protected synchronized void doExport() {
+        /*
+        服务暴露主要三步：
+        1.配置检查与覆盖填充生成URL
+        2.服务暴露（本地暴露与远程暴露）
+        3.注册中心注册
+         */
         if (unexported) {
             throw new IllegalStateException("Already unexported!");
         }
@@ -231,7 +237,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         }
         //属性优先级：自身设置（显式/默认）->外部引用(-Dxxx->外部引用自身设置->配置文件)
         checkDefault();
-        //当自身属性不存在时利用外部引用来填充自身熟悉值
+        //当自身属性不存在时利用外部引用来填充自身属性值
         if (provider != null) {
             if (application == null) {
                 application = provider.getApplication();
@@ -324,6 +330,8 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         }
         //多协议多注册中心服务暴露
         doExportUrls();
+
+        //每个暴露的服务都组装成一个服务提供者模型，存放到ApplicationModel中
         ProviderModel providerModel = new ProviderModel(getUniqueServiceName(), this, ref);
         ApplicationModel.initProviderModel(getUniqueServiceName(), providerModel);
     }
@@ -375,7 +383,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         if (name == null || name.length() == 0) {
             name = "dubbo";
         }
-
+        //将各种配置信息放置到map中， 用于后续构造URL
         Map<String, String> map = new HashMap<String, String>();
         map.put(Constants.SIDE_KEY, Constants.PROVIDER_SIDE);
         map.put(Constants.DUBBO_VERSION_KEY, Version.getProtocolVersion());
@@ -494,15 +502,18 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
 
             // export to local if the config is not remote (export to remote only when config is remote)
             if (!Constants.SCOPE_REMOTE.toString().equalsIgnoreCase(scope)) {
+                //本地暴露
                 exportLocal(url);
             }
             // export to remote if the config is not local (export to local only when config is local)
             if (!Constants.SCOPE_LOCAL.toString().equalsIgnoreCase(scope)) {
+                //远程暴露
                 if (logger.isInfoEnabled()) {
                     logger.info("Export dubbo service " + interfaceClass.getName() + " to url " + url);
                 }
                 if (registryURLs != null && !registryURLs.isEmpty()) {
                     for (URL registryURL : registryURLs) {
+                        //依次对每个注册中心进行服务暴露
                         url = url.addParameterIfAbsent(Constants.DYNAMIC_KEY, registryURL.getParameter(Constants.DYNAMIC_KEY));
                         URL monitorUrl = loadMonitor(registryURL);
                         if (monitorUrl != null) {
@@ -517,7 +528,8 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                         if (StringUtils.isNotEmpty(proxy)) {
                             registryURL = registryURL.addParameter(Constants.PROXY_KEY, proxy);
                         }
-
+                        //1.将服务信息URL以key为export添加到注册中心URL中
+                        //2.创建invoker对象
                         Invoker<?> invoker = proxyFactory.getInvoker(ref, (Class) interfaceClass, registryURL.addParameterAndEncoded(Constants.EXPORT_KEY, url.toFullString()));
                         DelegateProviderMetaDataInvoker wrapperInvoker = new DelegateProviderMetaDataInvoker(invoker, this);
 
@@ -525,6 +537,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                         exporters.add(exporter);
                     }
                 } else {
+                    //远程暴露但不使用注册中心，服务消费者和提供者直连，通常用于测试
                     Invoker<?> invoker = proxyFactory.getInvoker(ref, (Class) interfaceClass, url);
                     DelegateProviderMetaDataInvoker wrapperInvoker = new DelegateProviderMetaDataInvoker(invoker, this);
 
