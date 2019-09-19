@@ -122,7 +122,9 @@ public class RegistryProtocol implements Protocol {
     }
 
     public void register(URL registryUrl, URL registedProviderUrl) {
+        //获取注册中心客户端
         Registry registry = registryFactory.getRegistry(registryUrl);
+        //服务节点写入，{group(一般是dubbo)}/{ServerInterface}/providers路径下保存registryUrl
         registry.register(registedProviderUrl);
     }
 
