@@ -247,8 +247,8 @@ public class DubboProtocol extends AbstractProtocol {
                 stubServiceMethodsMap.put(url.getServiceKey(), stubServiceMethods);
             }
         }
-
-        openServer(url);//启用服务
+        //启动服务端
+        openServer(url);
         optimizeSerialization(url);
         return exporter;
     }
@@ -259,11 +259,13 @@ public class DubboProtocol extends AbstractProtocol {
         //client can export a service which's only for server to invoke
         boolean isServer = url.getParameter(Constants.IS_SERVER_KEY, true);
         if (isServer) {
+            //socket检测：<ip:port> -> server一个socket只能开启一个服务
             ExchangeServer server = serverMap.get(key);
             if (server == null) {
                 serverMap.put(key, createServer(url));
             } else {
                 // server supports reset, use together with override
+                //当前socket已被使用， 根据url重置
                 server.reset(url);
             }
         }

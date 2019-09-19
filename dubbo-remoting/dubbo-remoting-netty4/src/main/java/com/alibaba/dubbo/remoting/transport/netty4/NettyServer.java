@@ -67,6 +67,7 @@ public class NettyServer extends AbstractServer implements Server {
 
     @Override
     protected void doOpen() throws Throwable {
+        //利用获取的参数，创建netty服务端，并绑定到地址。
         bootstrap = new ServerBootstrap();
 
         bossGroup = new NioEventLoopGroup(1, new DefaultThreadFactory("NettyServerBoss", true));
